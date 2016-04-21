@@ -1,13 +1,13 @@
 # coding=utf-8
 import logging
-
+import time
 import logger
 from menu_helpers import add_ignore_options, dig_tree, set_refresh_menu_state, should_display_ignore, enable_channel_wrapper
 from subzero.constants import TITLE, ART, ICON, PREFIX, PLUGIN_IDENTIFIER, DEPENDENCY_MODULE_NAMES
 from support.auth import refresh_plex_token
 from support.background import scheduler
 from support.config import config
-from support.helpers import pad_title, timestamp
+from support.helpers import pad_title, timestamp, query_plex
 from support.ignore import ignore_list
 from support.items import getOnDeckItems, refreshItem, getAllItems
 from support.items import getRecentItems, get_items_info
@@ -297,6 +297,26 @@ def RefreshItemMenu(rating_key, title=None, base_title=None, item_title=None, ca
         summary="Refreshes the item, possibly picking up new subtitles on disk"
     ))
     oc.add(DirectoryObject(
+        key=Callback(RefreshItem1, rating_key=rating_key, item_title=item_title),
+        title=u"Refresh Test 1: %s" % item_title,
+        summary="Refreshes the item, possibly picking up new subtitles on disk"
+    ))
+    oc.add(DirectoryObject(
+        key=Callback(RefreshItem2, rating_key=rating_key, item_title=item_title),
+        title=u"Refresh Test 2: %s" % item_title,
+        summary="Refreshes the item, possibly picking up new subtitles on disk"
+    ))
+    oc.add(DirectoryObject(
+        key=Callback(RefreshItem3, rating_key=rating_key, item_title=item_title),
+        title=u"Refresh Test 3: %s" % item_title,
+        summary="Refreshes the item, possibly picking up new subtitles on disk"
+    ))
+    oc.add(DirectoryObject(
+        key=Callback(RefreshItem4, rating_key=rating_key, item_title=item_title),
+        title=u"Refresh Test 4: %s" % item_title,
+        summary="Refreshes the item, possibly picking up new subtitles on disk"
+    ))
+    oc.add(DirectoryObject(
         key=Callback(RefreshItem, rating_key=rating_key, item_title=item_title, force=True),
         title=u"Force-Refresh: %s" % item_title,
         summary="Issues a forced refresh, ignoring known subtitles and searching for new ones"
@@ -310,6 +330,52 @@ def RefreshItem(rating_key=None, came_from="/recent", item_title=None, force=Fal
     assert rating_key
     set_refresh_menu_state(u"Triggering %sRefresh for %s" % ("Force-" if force else "", item_title))
     Thread.Create(refreshItem, rating_key=rating_key, force=force)
+    return fatality(randomize=timestamp(), header=u"%s of item %s triggered" % ("Refresh" if not force else "Forced-refresh", rating_key),
+                    replace_parent=True)
+
+
+@route(PREFIX + '/item/r1/{rating_key}')
+def RefreshItem1(rating_key=None, came_from="/recent", item_title=None, force=False):
+    assert rating_key
+    set_refresh_menu_state(u"Triggering %sRefresh Test1 for %s" % ("Force-" if force else "", item_title))
+    Log.Debug("Triggering Test1 refresh")
+    refreshItem(rating_key=rating_key, force=force)
+    return fatality(randomize=timestamp(), header=u"%s of item %s triggered" % ("Refresh" if not force else "Forced-refresh", rating_key),
+                    replace_parent=True)
+
+
+def refItemTest2(rating_key=None, force=False):
+    time.sleep(2)
+    refreshItem(rating_key=rating_key, force=force)
+    time.sleep(2)
+
+
+@route(PREFIX + '/item/r2/{rating_key}')
+def RefreshItem2(rating_key=None, came_from="/recent", item_title=None, force=False):
+    assert rating_key
+    set_refresh_menu_state(u"Triggering %sRefresh Test2 for %s" % ("Force-" if force else "", item_title))
+    Log.Debug("Triggering Test2 refresh")
+    Thread.Create(refItemTest2, rating_key=rating_key, force=force)
+    return fatality(randomize=timestamp(), header=u"%s of item %s triggered" % ("Refresh" if not force else "Forced-refresh", rating_key),
+                    replace_parent=True)
+
+
+@route(PREFIX + '/item/r3/{rating_key}')
+def RefreshItem3(rating_key=None, came_from="/recent", item_title=None, force=False):
+    assert rating_key
+    set_refresh_menu_state(u"Triggering %sRefresh Test3 for %s" % ("Force-" if force else "", item_title))
+    Log.Debug("Triggering Test3 refresh")
+    Thread.Create(query_plex, url="http://127.0.0.1:32400/library/metadata/%s/refresh" % rating_key, args={}, method="PUT")
+    return fatality(randomize=timestamp(), header=u"%s of item %s triggered" % ("Refresh" if not force else "Forced-refresh", rating_key),
+                    replace_parent=True)
+
+
+@route(PREFIX + '/item/r4/{rating_key}')
+def RefreshItem4(rating_key=None, came_from="/recent", item_title=None, force=False):
+    assert rating_key
+    set_refresh_menu_state(u"Triggering %sRefresh Test4 for %s" % ("Force-" if force else "", item_title))
+    Log.Debug("Triggering Test4 refresh")
+    query_plex("http://127.0.0.1:32400/library/metadata/%s/refresh" % rating_key, {}, method="PUT")
     return fatality(randomize=timestamp(), header=u"%s of item %s triggered" % ("Refresh" if not force else "Forced-refresh", rating_key),
                     replace_parent=True)
 

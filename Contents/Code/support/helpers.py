@@ -126,9 +126,10 @@ def timestamp():
     return int(time.time())
 
 
-def query_plex(url, args):
+def query_plex(url, args, method="GET"):
     """
     simple http query to the plex API without parsing anything too complicated
+    :param method:
     :param url:
     :param args:
     :return:
@@ -139,5 +140,5 @@ def query_plex(url, args):
 
     computed_args = "&".join(["%s=%s" % (key, String.Quote(value)) for key, value in use_args.iteritems()])
 
-    return HTTP.Request(url + ("?%s" % computed_args) if computed_args else "", immediate=True)
+    return HTTP.Request(url + ("?%s" % computed_args) if computed_args else "", immediate=True, method=method)
 
