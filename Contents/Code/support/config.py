@@ -204,7 +204,8 @@ class Config(object):
                      #'thesubdb': Prefs['provider.thesubdb.enabled'],
                      'podnapisi': Prefs['provider.podnapisi.enabled'],
                      'addic7ed': Prefs['provider.addic7ed.enabled'],
-                     'tvsubtitles': Prefs['provider.tvsubtitles.enabled']
+                     'tvsubtitles': Prefs['provider.tvsubtitles.enabled'],
+                     'legendastv': Prefs['provider.legendastv.enabled']
                      }
         return filter(lambda prov: providers[prov], providers)
 
@@ -217,6 +218,10 @@ class Config(object):
                                                'password': Prefs['provider.opensubtitles.password'],
                                                'use_tag_search': Prefs['provider.opensubtitles.use_tags']
                                                },
+                             'legendastv': {'username': Prefs['provider.legendastv.username'],
+                                            'password': Prefs['provider.legendastv.password'],
+                                            'epScore': Prefs['provider.legendastv.epScore']
+                                           },
                              }
 
         return provider_settings
